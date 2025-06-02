@@ -1,38 +1,55 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Car, LogIn, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Car, UserPlus, Mail, Lock, Eye, EyeOff, AlertCircle, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 
-const LoginPage: React.FC = () => {
+const RegisterPage: React.FC = () => {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
-  const { signIn, signInWithProvider } = useAuth();
+  const { signUp, signInWithProvider } = useAuth();
   const navigate = useNavigate();
   
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
   
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
-    if (!email || !password) {
-      setError('Please enter both email and password.');
+    if (!name || !email || !password || !confirmPassword) {
+      setError('Please fill in all fields.');
+      return;
+    }
+    
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+    
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long.');
       return;
     }
     
     try {
       setIsLoading(true);
-      await signIn(email, password);
+      await signUp(email, password, name);
       navigate('/');
     } catch (error: any) {
-      setError(error.message || 'Failed to sign in. Please check your credentials.');
+      setError(error.message || 'Failed to create an account. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -44,13 +61,7 @@ const LoginPage: React.FC = () => {
       await signInWithProvider('google');
       navigate('/');
     } catch (error: any) {
-      if (error.code === 'auth/popup-blocked') {
-        setError(
-          'Pop-up was blocked by your browser. Please allow pop-ups for this site to sign in with Google. Look for the pop-up blocker icon in your address bar.'
-        );
-      } else {
-        setError(error.message || 'Failed to sign in with Google.');
-      }
+      setError(error.message || 'Failed to sign in with Google.');
     } finally {
       setIsLoading(false);
     }
@@ -71,12 +82,12 @@ const LoginPage: React.FC = () => {
           </Link>
         </motion.div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Sign in to your account
+          Create a new account
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           Or{' '}
-          <Link to="/register" className="font-medium text-red-600 hover:text-red-500">
-            create a new account
+          <Link to="/login" className="font-medium text-red-600 hover:text-red-500">
+            sign in to your existing account
           </Link>
         </p>
       </div>
@@ -91,6 +102,28 @@ const LoginPage: React.FC = () => {
           )}
           
           <form className="space-y-6" onSubmit={handleSubmit}>
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                Full Name
+              </label>
+              <div className="mt-1 relative rounded-md shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <User className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  autoComplete="name"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+                  placeholder="John Doe"
+                />
+              </div>
+            </div>
+            
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email address
@@ -125,7 +158,7 @@ const LoginPage: React.FC = () => {
                   id="password"
                   name="password"
                   type={showPassword ? "text" : "password"}
-                  autoComplete="current-password"
+                  autoComplete="new-password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -146,24 +179,38 @@ const LoginPage: React.FC = () => {
                 </div>
               </div>
             </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
+            
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+                Confirm Password
+              </label>
+              <div className="mt-1 relative rounded-md shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className="h-5 w-5 text-gray-400" />
+                </div>
                 <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
                 />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                  Remember me
-                </label>
-              </div>
-
-              <div className="text-sm">
-                <a href="#" className="font-medium text-red-600 hover:text-red-500">
-                  Forgot your password?
-                </a>
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                  <button
+                    type="button"
+                    onClick={toggleConfirmPasswordVisibility}
+                    className="text-gray-400 hover:text-gray-500 focus:outline-none"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -177,8 +224,8 @@ const LoginPage: React.FC = () => {
                   <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
                 ) : (
                   <>
-                    <LogIn className="h-5 w-5 mr-2" />
-                    Sign in
+                    <UserPlus className="h-5 w-5 mr-2" />
+                    Create Account
                   </>
                 )}
               </button>
@@ -213,7 +260,7 @@ const LoginPage: React.FC = () => {
                     <path fill="#EA4335" d="M -14.754 43.989 C -12.984 43.989 -11.404 44.599 -10.154 45.789 L -6.734 42.369 C -8.804 40.429 -11.514 39.239 -14.754 39.239 C -19.444 39.239 -23.494 41.939 -25.464 45.859 L -21.484 48.949 C -20.534 46.099 -17.884 43.989 -14.754 43.989 Z"/>
                   </g>
                 </svg>
-                Sign in with Google
+                Sign up with Google
               </button>
             </div>
           </div>
@@ -223,4 +270,4 @@ const LoginPage: React.FC = () => {
   );
 };
 
-export default LoginPage;
+export default RegisterPage;

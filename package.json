@@ -1,7 +1,7 @@
 {
-  "name": "vite-react-typescript-starter",
+  "name": "premium-car-showcase",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,12 +10,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.39.8",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.22.3",
-    "zustand": "^4.5.2"
+    "firebase": "^10.8.0",
+    "react-hook-form": "^7.51.1",
+    "framer-motion": "^11.1.11",
+    "react-query": "^3.39.3",
+    "clsx": "^2.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",

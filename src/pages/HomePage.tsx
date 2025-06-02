@@ -1,148 +1,263 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useCarStore } from '../store/carStore';
-import CarCard from '../components/cars/CarCard';
-import { ArrowRight, ShieldCheck, Clock, CreditCard } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ChevronRight, Search, Star, Shield, Award, Clock, ChevronDown, ChevronUp } from 'lucide-react';
+import { cars } from '../data/cars';
+import CarCard from '../components/CarCard';
 
 const HomePage: React.FC = () => {
-  const { cars, fetchCars, isLoading } = useCarStore();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [featuredCars, setFeaturedCars] = useState(cars.slice(0, 6));
+  const [isVisible, setIsVisible] = useState(false);
   
-  useEffect(() => {
-    fetchCars();
-  }, [fetchCars]);
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+  
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        duration: 0.5
+      }
+    }
+  };
 
-  // Get only the first 3 cars for the featured section
-  const featuredCars = cars.slice(0, 3);
+  useEffect(() => {
+    setIsVisible(true);
+    
+    // Sort featured cars by rating
+    const sortedCars = [...cars]
+      .sort((a, b) => b.rating - a.rating)
+      .slice(0, 6);
+    setFeaturedCars(sortedCars);
+  }, []);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Navigate to cars page with search query
+    window.location.href = `/cars?search=${searchQuery}`;
+  };
+
+  const scrollToFeatured = () => {
+    const featuredSection = document.getElementById('featured');
+    if (featuredSection) {
+      featuredSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
-    <div>
+    <div className="min-h-screen">
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-r from-blue-900 to-blue-800 overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://images.pexels.com/photos/10829245/pexels-photo-10829245.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1')] bg-cover bg-center opacity-20"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
-          <div className="max-w-xl">
-            <h1 className="text-4xl md:text-5xl font-bold text-white leading-tight">
-              Discover the Perfect Car for Your Journey
+      <div 
+        className="h-screen relative bg-cover bg-center flex items-center"
+        style={{
+          backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(https://images.pexels.com/photos/3802510/pexels-photo-3802510.jpeg)',
+          backgroundAttachment: 'fixed'
+        }}
+      >
+        <div className="container mx-auto px-4 z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 30 }}
+            transition={{ duration: 0.7 }}
+            className="max-w-2xl"
+          >
+            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
+              Discover Your Perfect <span className="text-red-600">Luxury</span> Vehicle
             </h1>
-            <p className="mt-5 text-xl text-blue-100">
-              Rent a car with ease. No hidden fees, no hassle – just a smooth ride for your travels.
+            <p className="text-xl text-gray-200 mb-8">
+              Explore our exclusive collection of premium cars for an unmatched driving experience.
             </p>
-            <div className="mt-8 flex flex-col sm:flex-row gap-4">
+            
+            <form onSubmit={handleSearch} className="flex mb-8">
+              <div className="relative flex-grow">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="block w-full pl-10 pr-3 py-3 rounded-l-md border-0 text-gray-900 focus:ring-2 focus:ring-red-600 focus:outline-none"
+                  placeholder="Search by make, model, or year..."
+                />
+              </div>
+              <button
+                type="submit"
+                className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-r-md flex items-center transition-colors duration-300"
+              >
+                Search
+                <ChevronRight className="ml-2 h-5 w-5" />
+              </button>
+            </form>
+            
+            <div className="flex space-x-4">
               <Link
                 to="/cars"
-                className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-blue-800 bg-white hover:bg-blue-50 transition duration-150 ease-in-out"
+                className="bg-white hover:bg-gray-100 text-gray-900 font-bold py-3 px-6 rounded-md transition-colors duration-300"
               >
-                Browse Cars
+                Browse All Cars
               </Link>
-              <Link
-                to="/about"
-                className="inline-flex items-center justify-center px-6 py-3 border border-white text-base font-medium rounded-md text-white hover:bg-blue-700 hover:bg-opacity-30 transition duration-150 ease-in-out"
+              <button
+                onClick={scrollToFeatured}
+                className="bg-transparent hover:bg-white/10 border border-white text-white font-bold py-3 px-6 rounded-md transition-colors duration-300"
               >
-                Learn More
-              </Link>
+                Featured Cars
+              </button>
             </div>
-          </div>
+          </motion.div>
         </div>
-      </div>
-
-      {/* Features Section */}
-      <div className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h2 className="text-3xl font-bold text-gray-900">Why Choose DriveEase</h2>
-            <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-500">
-              We make car rental simple, affordable, and hassle-free.
-            </p>
-          </div>
-
-          <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="bg-blue-50 p-6 rounded-xl">
-              <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mb-4">
-                <ShieldCheck className="h-6 w-6 text-blue-800" />
-              </div>
-              <h3 className="text-xl font-medium text-gray-900">Safe & Reliable</h3>
-              <p className="mt-2 text-gray-600">
-                All our cars are regularly inspected and maintained to ensure your safety.
-              </p>
-            </div>
-
-            <div className="bg-blue-50 p-6 rounded-xl">
-              <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mb-4">
-                <Clock className="h-6 w-6 text-blue-800" />
-              </div>
-              <h3 className="text-xl font-medium text-gray-900">24/7 Support</h3>
-              <p className="mt-2 text-gray-600">
-                Our customer support team is available round the clock to assist you.
-              </p>
-            </div>
-
-            <div className="bg-blue-50 p-6 rounded-xl">
-              <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mb-4">
-                <CreditCard className="h-6 w-6 text-blue-800" />
-              </div>
-              <h3 className="text-xl font-medium text-gray-900">Transparent Pricing</h3>
-              <p className="mt-2 text-gray-600">
-                No hidden fees or charges. What you see is what you pay.
-              </p>
-            </div>
-          </div>
+        
+        <div className="absolute bottom-10 left-0 right-0 flex justify-center">
+          <button 
+            onClick={scrollToFeatured}
+            className="animate-bounce bg-white/20 rounded-full p-2 backdrop-blur-sm"
+          >
+            <ChevronDown className="h-6 w-6 text-white" />
+          </button>
         </div>
       </div>
 
       {/* Featured Cars Section */}
-      <div className="py-16 bg-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900">Featured Cars</h2>
+      <section id="featured" className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Featured Vehicles</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Explore our handpicked selection of premium vehicles that combine luxury, performance, and innovation.
+            </p>
+          </div>
+          
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          >
+            {featuredCars.map((car) => (
+              <motion.div key={car.id} variants={itemVariants}>
+                <CarCard car={car} />
+              </motion.div>
+            ))}
+          </motion.div>
+          
+          <div className="text-center mt-12">
             <Link
               to="/cars"
-              className="inline-flex items-center text-blue-800 hover:text-blue-900"
+              className="inline-flex items-center bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-md transition-colors duration-300"
             >
-              View all cars <ArrowRight className="ml-2 h-5 w-5" />
+              View All Vehicles
+              <ChevronRight className="ml-2 h-5 w-5" />
             </Link>
           </div>
+        </div>
+      </section>
 
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {isLoading ? (
-              <p className="text-gray-600">Loading featured cars...</p>
-            ) : featuredCars.length > 0 ? (
-              featuredCars.map(car => <CarCard key={car.id} car={car} />)
-            ) : (
-              <p className="text-gray-600">No cars available at the moment.</p>
-            )}
+      {/* Why Choose Us Section */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Choose Us</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              We're committed to providing the best luxury car shopping experience with unmatched service and expertise.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <motion.div
+              whileHover={{ y: -10 }}
+              className="bg-gray-50 p-6 rounded-lg shadow-sm text-center"
+            >
+              <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-red-100 text-red-600 mb-4">
+                <Star size={24} />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Premium Selection</h3>
+              <p className="text-gray-600">
+                Curated collection of the finest vehicles from prestigious brands worldwide.
+              </p>
+            </motion.div>
+            
+            <motion.div
+              whileHover={{ y: -10 }}
+              className="bg-gray-50 p-6 rounded-lg shadow-sm text-center"
+            >
+              <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-red-100 text-red-600 mb-4">
+                <Shield size={24} />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Quality Guaranteed</h3>
+              <p className="text-gray-600">
+                Every vehicle undergoes rigorous inspection and certification processes.
+              </p>
+            </motion.div>
+            
+            <motion.div
+              whileHover={{ y: -10 }}
+              className="bg-gray-50 p-6 rounded-lg shadow-sm text-center"
+            >
+              <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-red-100 text-red-600 mb-4">
+                <Award size={24} />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Expert Service</h3>
+              <p className="text-gray-600">
+                Our automotive specialists provide personalized guidance and support.
+              </p>
+            </motion.div>
+            
+            <motion.div
+              whileHover={{ y: -10 }}
+              className="bg-gray-50 p-6 rounded-lg shadow-sm text-center"
+            >
+              <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-red-100 text-red-600 mb-4">
+                <Clock size={24} />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Seamless Experience</h3>
+              <p className="text-gray-600">
+                Streamlined process from browsing to purchase and after-sales support.
+              </p>
+            </motion.div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* CTA Section */}
-      <div className="bg-blue-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
-          <div className="lg:flex lg:items-center lg:justify-between">
-            <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              <span className="block">Ready to hit the road?</span>
-              <span className="block text-blue-200">Book your car rental today.</span>
-            </h2>
-            <div className="mt-8 flex lg:mt-0 lg:flex-shrink-0">
-              <div className="inline-flex rounded-md shadow">
-                <Link
-                  to="/cars"
-                  className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-blue-800 bg-white hover:bg-blue-50 transition duration-150 ease-in-out"
-                >
-                  Get Started
-                </Link>
-              </div>
-              <div className="ml-3 inline-flex rounded-md shadow">
-                <Link
-                  to="/contact"
-                  className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-900 hover:bg-blue-800 transition duration-150 ease-in-out"
-                >
-                  Contact Us
-                </Link>
-              </div>
-            </div>
+      <section 
+        className="py-20 bg-cover bg-center"
+        style={{
+          backgroundImage: 'linear-gradient(rgba(30, 41, 59, 0.8), rgba(30, 41, 59, 0.8)), url(https://images.pexels.com/photos/2834653/pexels-photo-2834653.jpeg)'
+        }}
+      >
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold text-white mb-6">Ready to Experience Luxury?</h2>
+          <p className="text-xl text-gray-200 mb-8 max-w-2xl mx-auto">
+            Join thousands of satisfied customers who have found their perfect luxury vehicle with us.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+            <Link
+              to="/cars"
+              className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-md transition-colors duration-300"
+            >
+              Explore Vehicles
+            </Link>
+            <Link
+              to="/contact"
+              className="bg-transparent hover:bg-white/10 border border-white text-white font-bold py-3 px-8 rounded-md transition-colors duration-300"
+            >
+              Contact Us
+            </Link>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 };
